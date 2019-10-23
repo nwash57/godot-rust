@@ -491,28 +491,32 @@ impl Variant {
     }
 
     // TODO: return a proper error.
-    pub fn call(&mut self, method: &GodotString, args: &[Variant]) -> Result<(), ()> {
+    pub fn call(&mut self, method: &GodotString, args: &[Variant]) -> Result<Variant, ()> {
         unsafe {
             let api = get_api();
             let mut err = sys::godot_variant_call_error::default();
+            let mut v: Option<sys::godot_variant> = None;
             if args.is_empty() {
                 let mut first = ::std::ptr::null() as *const sys::godot_variant;
-                (api.godot_variant_call)(&mut self.0, &method.0, &mut first, 0, &mut err);
+                v = Some((api.godot_variant_call)(&mut self.0, &method.0, &mut first, 0, &mut err));
             } else {
                 // TODO: double check that this is safe.
                 let gd_args: &[sys::godot_variant] = transmute(args);
                 let mut first = &gd_args[0] as *const sys::godot_variant;
-                (api.godot_variant_call)(
+                v = Some((api.godot_variant_call)(
                     &mut self.0,
                     &method.0,
                     &mut first,
                     args.len() as i32,
                     &mut err,
-                );
+                ));
             }
 
             if err.error == sys::godot_variant_call_error_error_GODOT_CALL_ERROR_CALL_OK {
-                Ok(())
+                match v {
+                    Some(x) => Ok(Variant::from_sys(x)),
+                    None => Ok(Variant::new())
+                }
             } else {
                 Err(())
             }
