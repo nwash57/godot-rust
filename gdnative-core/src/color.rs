@@ -38,6 +38,18 @@ impl Color {
     }
 }
 
+impl ToVariant for Color {
+    fn to_variant(&self) -> Variant {
+        Variant::from_node_path(self)
+    }
+}
+
+impl FromVariant for Color {
+    fn from_variant(variant: &Variant) -> Option<Self> {
+        variant.try_to_node_path()
+    }
+}
+
 #[test]
 fn color_repr() {
     use std::mem::size_of;
