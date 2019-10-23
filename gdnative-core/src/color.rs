@@ -1,5 +1,8 @@
 use crate::get_api;
 use crate::sys;
+use crate::ToVariant;
+use crate::FromVariant;
+use crate::Variant;
 use std::mem::transmute;
 
 /// RGBA color with 32 bits floating point components.
@@ -40,13 +43,13 @@ impl Color {
 
 impl ToVariant for Color {
     fn to_variant(&self) -> Variant {
-        Variant::from_node_path(self)
+        Variant::from_color(self)
     }
 }
 
 impl FromVariant for Color {
     fn from_variant(variant: &Variant) -> Option<Self> {
-        variant.try_to_node_path()
+        variant.try_to_color()
     }
 }
 
